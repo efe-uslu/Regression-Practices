@@ -174,3 +174,31 @@ Then, we have to test our predictors jointly across both of the responses.
 *Figure 20: Joint test for both of the responses*
 
 From the test results above, we can see that all three of our predictors are significant for our joint responses.
+
+We can also check the correlation between the responses as multivariate regression works best when they are correlated.
+
+<img width="312" height="56" alt="image" src="https://github.com/user-attachments/assets/15995986-f09b-4500-8c09-d69df7cfa4cc" />
+
+*Figure 21: Correlation between response variables.*
+
+From the values above, we see that there is moderate correlation between the response variables, so multivariate analysis is reasonable.
+
+For diagnostics check, we do each response seperately.
+
+<img width="639" height="540" alt="image" src="https://github.com/user-attachments/assets/8e22b459-9bf5-49d6-a898-a43e6ef3dbc0" />
+
+*Figure 22: Diagnostics for Sepal.Length*
+
+<img width="639" height="540" alt="image" src="https://github.com/user-attachments/assets/ea317601-2132-436e-86db-06bacbc1b8f7" />
+
+*Figure 22: Diagnostics for Sepal.Width*
+
+Looking at the diagnostics, for both the response variables, the Residuals vs Fitted plot shows no derrivance from the 0 line and a constant variance. So the linearity and homoscedasticity assumtions are on point. The Q-Q plot shows the points are mostly on the line, so the residuals are normally distributed.
+
+<img width="639" height="540" alt="image" src="https://github.com/user-attachments/assets/2ea977fa-a650-4038-af0d-a88cb59cd1dc" />
+
+*Figure 23: The prediction of Sepal.Length with 95% CI*
+
+<img width="639" height="540" alt="image" src="https://github.com/user-attachments/assets/0eba7798-0929-4118-b6e1-b4e19f5b2da6" />
+
+*Figure 24: The prediction of Sepal.Width with 95% CI*
