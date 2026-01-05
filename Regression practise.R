@@ -33,15 +33,15 @@ predict(model.slr, pred_car,interval="confidence")
 
 
 plot(model.slr, which = 1)
-### in this residuals vs fitted pllot, the residuals appear randomly scattered around zero with no systematic pattern, indicating that the linearity and homoscedasticity assumptions are reasonable.
+### in this residuals vs fitted plot, the residuals appear randomly scattered around zero with no systematic pattern, indicating that the linearity and homoscedasticity assumptions are reasonable.
 
 plot(model.slr, which=2)
-###As most point lie on the line, the assumtion of normally distributed residuals hold.
+###As most point lie on the line, the assumption of normally distributed residuals hold.
 
 
 #1.2 Multiple Linear Regression
 
-###We will use the same data, mtcars, but now with two predictors.
+###We will use the same data, mtcars, but now with three predictors.
 ###First, we have to decide whether each predictor is numeric or factor.
 ###the first new predictor we will use (cyl) is a factor and the second new predictor (hp) is numeric, also the old predictor we will keep is numeric
 
@@ -88,7 +88,7 @@ par(mfrow = c(2,2))
 plot(new.model.mlr)
 par(mfrow = c(1,1))
 ###The Residuals vs Fitted plot shows no derrivance from the 0 line and a constant variance. So the linearity and homoscedasticity assumtions are on point.
-###The Q-Q plot shows the points are mostly on the line, so the residuals are normally distributed.
+###T
 
 
 ##To Predict and make appropriate graphs:
@@ -160,4 +160,149 @@ ggplot() +
 ###This type of regression is for modelling non-linear relationships using polynomial terms, while remaining linear in parameters.
 ###Why this is important? -> as the model is linear in parameters, it can be estimated using ordinary least squares.
 
+##To check whether a curve is appropriate:
+plot(mpg ~ wt, data = mtcars,
+     main = "MPG vs Weight (mtcars)",
+     xlab = "Weight (1000 lbs)",
+     ylab = "Miles per gallon")
+
+##Simple Linear Regression:
+m1 <- lm(mpg ~ wt, data = mtcars)
+summary(m1)
+
+##Polynomial Regression (x^2):
+m2 <- lm(mpg ~ poly(wt, 2, raw = TRUE), data = mtcars)
+summary(m2)
+
+##More flexible curve with x^3:
+m3 <- lm(mpg ~ poly(wt, 3, raw = TRUE), data = mtcars)
+summary(m3)
+###is worse
+
+anova(m1, m2, m3)
+
+##plots to check diagnostics:
+par(mfrow = c(2, 2))
+plot(m2)  
+par(mfrow = c(1, 1))
+
+
+##Visualizing the model with 95% CI:
+wt_grid <- seq(min(mtcars$wt), max(mtcars$wt), length.out = 200)
+pred <- predict(
+  m2,
+  newdata = data.frame(wt = wt_grid),
+  interval = "confidence",
+  level = 0.95
+)
+plot(mpg ~ wt, data = mtcars,
+     main = "Polynomial Regression (Quadratic) with 95% CI",
+     xlab = "Weight (1000 lbs)",
+     ylab = "MPG")
+lines(wt_grid, pred[, "fit"], lwd = 2)
+lines(wt_grid, pred[, "lwr"], lty = 2)
+lines(wt_grid, pred[, "upr"], lty = 2)
+
+
+##K-fold method:
+set.seed(42)   
+K <- 5                   
+max_degree <- (10 )
+
+cv_rmse_degree <- function(d, data, K = 5) {
+  n <- nrow(data)
+  folds <- sample(rep(1:K, length.out = n)) 
+  
+  rmse_each_fold <- numeric(K)
+  for (k in 1:K) {
+    train <- data[folds != k, ]
+    test  <- data[folds == k, ]
+    fit <- lm(mpg ~ poly(wt, d, raw = TRUE), data = train)
+    pred <- predict(fit, newdata = test)
+    rmse_each_fold[k] <- sqrt(mean((test$mpg - pred)^2))
+  }
+  mean(rmse_each_fold)
+}
+degrees <- 1:max_degree
+cv_rmse <- sapply(degrees, cv_rmse_degree, data = mtcars, K = K)
+results <- data.frame(degree = degrees, cv_rmse = cv_rmse)
+results
+best_degree <- results$degree[which.min(results$cv_rmse)]
+best_degree
+
+
+
+#1.4 Multivariate Linear Regression 
+
+data(iris)
+
+str(iris)
+summary(iris)
+head(iris)
+
+m_mv <- lm(cbind(Sepal.Length, Sepal.Width) ~ Petal.Length + Petal.Width + Species,
+           data = iris)
+
+class(m_mv)
+
+summary(m_mv)
+
+
+
+anova(m_mv)
+manova_mv <- manova(m_mv)
+summary(manova_mv, test = "Pillai")
+summary(manova_mv, test = "Wilks")
+
+
+res <- residuals(m_mv)
+cor(res)
+
+##For diagnostic check (seperately for each response):
+m_len <- lm(Sepal.Length ~ Petal.Length + Petal.Width + Species, data = iris)
+m_wid <- lm(Sepal.Width  ~ Petal.Length + Petal.Width + Species, data = iris)
+
+par(mfrow = c(2, 2))
+plot(m_len)   # diagnostics for Sepal.Length model
+
+par(mfrow = c(2, 2))
+plot(m_wid)   # diagnostics for Sepal.Width model
+
+par(mfrow = c(1, 1))
+
+##Prediction:
+newdata <- data.frame(
+  Petal.Length = seq(min(iris$Petal.Length),
+                     max(iris$Petal.Length),
+                     length.out = 100),
+  Petal.Width  = mean(iris$Petal.Width),
+  Species      = factor("versicolor", levels = levels(iris$Species))
+)
+m_len <- lm(Sepal.Length ~ Petal.Length + Petal.Width + Species, data = iris)
+m_wid <- lm(Sepal.Width  ~ Petal.Length + Petal.Width + Species, data = iris)
+
+pred_len <- predict(m_len, newdata, interval = "confidence")
+pred_wid <- predict(m_wid, newdata, interval = "confidence")
+plot(
+  iris$Petal.Length, iris$Sepal.Length,
+  pch = 16, col = "grey70",
+  xlab = "Petal.Length",
+  ylab = "Sepal.Length",
+  main = "Predicted Sepal.Length (with 95% CI)"
+)
+
+lines(newdata$Petal.Length, pred_len[, "fit"], lwd = 2)
+lines(newdata$Petal.Length, pred_len[, "lwr"], lty = 2)
+lines(newdata$Petal.Length, pred_len[, "upr"], lty = 2)
+plot(
+  iris$Petal.Length, iris$Sepal.Width,
+  pch = 16, col = "grey70",
+  xlab = "Petal.Length",
+  ylab = "Sepal.Width",
+  main = "Predicted Sepal.Width (with 95% CI)"
+)
+
+lines(newdata$Petal.Length, pred_wid[, "fit"], lwd = 2)
+lines(newdata$Petal.Length, pred_wid[, "lwr"], lty = 2)
+lines(newdata$Petal.Length, pred_wid[, "upr"], lty = 2)
 
