@@ -135,3 +135,42 @@ Now, to check the model diagnostics:
 
 The Residuals vs Fitted plot shows no derrivance from the 0 line and a constant variance. So the linearity and homoscedasticity assumtions are on point. The Q-Q plot shows the points are mostly on the line, so the residuals are normally distributed.
 
+Now, we visiualize the regression with 95% CI.
+
+<img width="639" height="540" alt="image" src="https://github.com/user-attachments/assets/9ef53647-1fed-402f-af4e-36f807a740b7" />
+
+*Figure 16: The model constructed with 95% CI.*
+
+We could have also done a k-fold cross validation to choose the degree of our model. This method splits the data into k folds and trains on k-1 folds and tests on the remaining fold. Lower RMSE means better generalization in this case.
+
+<img width="178" height="177" alt="image" src="https://github.com/user-attachments/assets/4f9caf23-2ce4-4ed4-b8a6-8c42e46f5e65" />
+
+*Figure 17: K-fold results*
+
+From the results above, we see that the second degree polynomial has the lowest RMSE, meaning we chose the best degree model already.
+
+**1.4 Multivariate Linear Regression** 
+
+Multivariate Linear Regression models are used for modelling multiple response variables simultaneously, using the same set of predictors.
+
+This time, instead of MTCARS, we will use the built-in iris dataset. Our responses will be Sepal.Length and Sepal.Width and our predictors will be Petal.Length, Petal.Width, and Species.
+
+We will start of by defining our model and checking the summary for each of the different responses.
+
+<img width="532" height="344" alt="image" src="https://github.com/user-attachments/assets/7381d660-c6f0-4abc-9c2d-e37fbdf6b8b2" />
+
+*Figure 19: Built model summary for Sepal.Length*
+
+<img width="521" height="339" alt="image" src="https://github.com/user-attachments/assets/0c0eab8a-1d1a-4971-95db-9ed8c54c3811" />
+
+*Figure 19: Built model summary for Sepal.Width*
+
+From this summary, we see that all variables are significant (p-value < 0.05) except for Petal.Width on Sepal.Length, with an R-squared value of 0.53.
+
+Then, we have to test our predictors jointly across both of the responses.
+
+<img width="535" height="149" alt="image" src="https://github.com/user-attachments/assets/57005d98-ed20-4ed4-8fec-fc792548390d" />
+
+*Figure 20: Joint test for both of the responses*
+
+From the test results above, we can see that all three of our predictors are significant for our joint responses.
